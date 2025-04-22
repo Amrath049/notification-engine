@@ -5,6 +5,7 @@ import { ClientsModule } from './clients/clients.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { ProviderConfigModule } from './provider-config/provider-config.module';
+import { TemplatesModule } from './templates/templates.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ProviderConfigModule } from './provider-config/provider-config.module';
     ClientsModule,
     AuthModule,
     ProviderConfigModule,
+    TemplatesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
