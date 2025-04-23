@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { ProviderConfigModule } from './provider-config/provider-config.module';
 import { TemplatesModule } from './templates/templates.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { TemplatesModule } from './templates/templates.module';
     AuthModule,
     ProviderConfigModule,
     TemplatesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
