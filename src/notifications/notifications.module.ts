@@ -8,12 +8,16 @@ import {
 } from './schemas/notification.schema';
 import { TemplatesModule } from 'src/templates/templates.module';
 import { ProviderConfigModule } from 'src/provider-config/provider-config.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
     ]),
+    BullModule.registerQueue({
+      name: 'notifications-queue',
+    }),
     TemplatesModule,
     ProviderConfigModule,
   ],

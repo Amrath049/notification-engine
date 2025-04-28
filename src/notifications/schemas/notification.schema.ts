@@ -16,6 +16,8 @@ export enum NotificationStatus {
 
 @Schema({ timestamps: true })
 export class Notification {
+  _id: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId, ref: 'Client', required: true })
   clientId: Types.ObjectId;
 

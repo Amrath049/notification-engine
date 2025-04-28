@@ -9,6 +9,8 @@ import { TemplatesService } from 'src/templates/templates.service';
 import { Model, Types } from 'mongoose';
 import { ProviderConfigService } from 'src/provider-config/provider-config.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class NotificationsService {
@@ -17,6 +19,8 @@ export class NotificationsService {
     private readonly notificationModel: Model<NotificationDocument>,
     private readonly templatesService: TemplatesService,
     private readonly providerConfigService: ProviderConfigService,
+    @InjectQueue('notifications-queue')
+    private readonly notificationQueue: Queue,
   ) {}
 
   async sendNotification(
@@ -42,6 +46,7 @@ export class NotificationsService {
         clientId,
         channel,
       );
+
     if (!providerConfig) {
       throw new NotFoundException(
         'No provider config found for this client/channel/provider',
@@ -59,30 +64,37 @@ export class NotificationsService {
         status: NotificationStatus.QUEUED,
       });
 
-    // 4. Prepare message body using template (basic string replace for now)
-    const renderedBody = this.renderTemplate(template.body, payload);
-    const subject = template.subject
-      ? this.renderTemplate(template.subject, payload)
-      : undefined;
+    // // 4. Prepare message body using template (basic string replace for now)
+    // const renderedBody = this.renderTemplate(template.body, payload);
+    // const subject = template.subject
+    //   ? this.renderTemplate(template.subject, payload)
+    //   : undefined;
 
     // 5. Use provider to send message
     // const provider = this.providerFactory.getProvider(channel, template.provider);
     // await provider.send(renderedBody, subject, payload, providerConfig.credentials);
 
+    // Add job to queue
+    await this.notificationQueue.add('send-notification', {
+      clientId,
+      dto,
+      notificationId: notification._id.toString(),
+    });
+
     // For now, simulate sending success
-    await this.notificationModel.updateOne(
-      { _id: notification._id },
-      {
-        $set: {
-          status: NotificationStatus.SENT,
-          sentAt: new Date(),
-        },
-      },
-    );
+    // await this.notificationModel.updateOne(
+    //   { _id: notification._id },
+    //   {
+    //     $set: {
+    //       status: NotificationStatus.SENT,
+    //       sentAt: new Date(),
+    //     },
+    //   },
+    // );
 
     return {
       notificationId: notification?._id?.toString() || '',
-      status: NotificationStatus.SENT,
+      status: NotificationStatus.QUEUED,
     };
   }
 
@@ -94,5 +106,21 @@ export class NotificationsService {
       rendered = rendered.replace(regex, value);
     }
     return rendered;
+  }
+
+  async processNotification(
+    clientId: string,
+    dto: SendNotificationDto,
+    notificationId: string,
+  ) {
+    // This method will be called from processor
+    // Handle template rendering + sending logic here (same as before)
+    console.log('Sending Notification for', notificationId);
+
+    // TODO: implement the real sending logic here (using factory pattern later)
+    await this.notificationModel.updateOne(
+      { _id: notificationId },
+      { $set: { status: NotificationStatus.SENT, sentAt: new Date() } },
+    );
   }
 }
