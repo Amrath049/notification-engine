@@ -9,7 +9,7 @@ export class ProviderFactory {
       if (providerName === 'nodemailer') {
         return new NodemailerProvider();
       }
-      // You can add more email providers here later
+      //  can add more email providers here later
     }
     // Later, add whatsapp/sms providers
 
